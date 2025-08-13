@@ -1,7 +1,7 @@
-// --- src/app/views/CurriculumBuilder.js (v2.2 - LINT FIX) ---
+// --- src/app/views/CurriculumBuilder.js (v2.4 - DEFINITIVE SYNTAX FIX) ---
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // <-- SYNTAX CORRECTED
 import { ref, onValue, push, set, remove, update } from 'firebase/database';
 import { database } from '../lib/firebase';
 import './CurriculumBuilder.css';
@@ -34,24 +34,25 @@ const CurriculumBuilder = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const { type, data } = modal;
+        const { moduleId, title, order, lessonId, description, thumbnailUrl, videoUrl, chatbotEmbedCode, unlockCode } = formData;
 
         if (type === 'addModule' || type === 'editModule') {
-            const path = type === 'addModule' ? `courseContent/modules/${formData.moduleId}` : `courseContent/modules/${data.moduleId}`;
+            const path = type === 'addModule' ? `courseContent/modules/${moduleId}` : `courseContent/modules/${data.moduleId}`;
             await set(ref(database, path), {
-                title: formData.title,
-                order: parseInt(formData.order, 10),
+                title: title,
+                order: parseInt(order, 10),
                 lessons: type === 'editModule' ? data.lessons : {}
             });
         } else if (type === 'addLesson' || type === 'editLesson') {
-            const path = type === 'addLesson' ? `courseContent/modules/${data.moduleId}/lessons/${formData.lessonId}` : `courseContent/modules/${data.moduleId}/lessons/${data.lessonId}`;
+            const path = type === 'addLesson' ? `courseContent/modules/${data.moduleId}/lessons/${lessonId}` : `courseContent/modules/${data.moduleId}/lessons/${data.lessonId}`;
             await set(ref(database, path), {
-                title: formData.title,
-                description: formData.description,
-                order: parseInt(formData.order, 10),
-                thumbnailUrl: formData.thumbnailUrl || '',
-                videoUrl: formData.videoUrl,
-                chatbotEmbedCode: formData.chatbotEmbedCode,
-                unlockCode: formData.unlockCode
+                title: title,
+                description: description,
+                order: parseInt(order, 10),
+                thumbnailUrl: thumbnailUrl || '',
+                videoUrl: videoUrl,
+                chatbotEmbedCode: chatbotEmbedCode,
+                unlockCode: unlockCode
             });
         }
         closeModal();
@@ -60,20 +61,17 @@ const CurriculumBuilder = () => {
     const handleRemove = async (type, moduleId, lessonId = null) => {
         let path;
         let confirmMessage;
-
         if (type === 'module') {
             path = `courseContent/modules/${moduleId}`;
             confirmMessage = "Are you sure you want to delete this entire module and all its lessons? This cannot be undone.";
-        } else if (type === 'lesson') {
+        } else {
             path = `courseContent/modules/${moduleId}/lessons/${lessonId}`;
             confirmMessage = "Are you sure you want to delete this lesson?";
         }
-
         if (window.confirm(confirmMessage)) {
             await remove(ref(database, path));
         }
     };
-
 
     if (loading) return <div>Loading Curriculum...</div>;
 
@@ -83,10 +81,9 @@ const CurriculumBuilder = () => {
                 <h1>Curriculum Builder</h1>
                 <button onClick={() => openModal('addModule')} className="add-button">+ Add New Module</button>
             </div>
-
             <div className="modules-list">
                 {Object.keys(modules).sort((a,b) => modules[a].order - modules[b].order).map(moduleId => {
-                    const moduleData = modules[moduleId]; // <-- RENAMED VARIABLE
+                    const moduleData = modules[moduleId];
                     return (
                         <div key={moduleId} className="module-card">
                             <div className="module-header">
@@ -117,9 +114,35 @@ const CurriculumBuilder = () => {
             </div>
 
             {modal.type && (
-                 <div className="modal-backdrop">
+                <div className="modal-backdrop">
                     <div className="modal-content">
-                        {/* ... modal JSX is the same ... */}
+                        <h2>
+                            {modal.type === 'addModule' && 'Add New Module'}
+                            {modal.type === 'editModule' && 'Edit Module'}
+                            {modal.type === 'addLesson' && 'Add New Lesson'}
+                            {modal.type === 'editLesson' && 'Edit Lesson'}
+                        </h2>
+                        <form onSubmit={handleSubmit}>
+                            {(modal.type === 'addModule' || modal.type === 'editModule') && <>
+                                <input name="moduleId" onChange={handleFormChange} placeholder="Module ID (e.g., module_01)" defaultValue={modal.data.moduleId} required disabled={modal.type === 'editModule'} />
+                                <input name="title" onChange={handleFormChange} placeholder="Module Title" defaultValue={formData.title} required />
+                                <input name="order" type="number" onChange={handleFormChange} placeholder="Order (e.g., 1)" defaultValue={formData.order} required />
+                            </>}
+                            {(modal.type === 'addLesson' || modal.type === 'editLesson') && <>
+                                <input name="lessonId" onChange={handleFormChange} placeholder="Lesson ID (e.g., lesson_01)" defaultValue={modal.data.lessonId} required disabled={modal.type === 'editLesson'} />
+                                <input name="title" onChange={handleFormChange} placeholder="Lesson Title" defaultValue={formData.title} required />
+                                <textarea name="description" onChange={handleFormChange} placeholder="Lesson Description" defaultValue={formData.description} />
+                                <input name="order" type="number" onChange={handleFormChange} placeholder="Order (e.g., 1)" defaultValue={formData.order} required />
+                                <input name="videoUrl" onChange={handleFormChange} placeholder="YouTube Video URL" defaultValue={formData.videoUrl} required />
+                                <input name="thumbnailUrl" onChange={handleFormChange} placeholder="Thumbnail Image URL (Optional)" defaultValue={formData.thumbnailUrl} />
+                                <textarea name="chatbotEmbedCode" onChange={handleFormChange} placeholder="Chatbot Embed Code" defaultValue={formData.chatbotEmbedCode} required />
+                                <input name="unlockCode" onChange={handleFormChange} placeholder="Unlock Code" defaultValue={formData.unlockCode} required />
+                            </>}
+                            <div className="modal-actions">
+                                <button type="button" onClick={closeModal}>Cancel</button>
+                                <button type="submit" className="submit-button">Save Changes</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
