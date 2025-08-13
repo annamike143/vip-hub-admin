@@ -1,0 +1,28 @@
+/* --- src/app/views/CurriculumBuilder.css --- */
+.builder-container { padding: 2rem; }
+.builder-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.modules-list { display: flex; flex-direction: column; gap: 2rem; }
+.module-card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; }
+.module-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
+.module-header h3 { margin: 0; }
+.module-header button { margin-left: 1rem; }
+.lessons-list { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.lesson-item { display: flex; justify-content: space-between; align-items: center; background-color: var(--background-color); padding: 1rem; border-radius: 6px; }
+
+/* Re-using modal styles from VipManager.css */
+/* Add specific styles for the curriculum form */
+.modal-content textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+}
+.modal-content input:disabled {
+    background-color: #eee;
+    cursor: not-allowed;
+}

@@ -1,4 +1,4 @@
-// --- src/firebase.js (Secure Connection for Next.js) ---
+// --- src/lib/firebase.js ---
 import { initializeApp, getApps } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
@@ -16,11 +16,8 @@ const firebaseConfig = {
 };
 
 let app;
-if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-} else {
-    app = getApps()[0];
-}
+if (!getApps().length) { app = initializeApp(firebaseConfig); } 
+else { app = getApps()[0]; }
 
 export const database = getDatabase(app);
 export const auth = getAuth(app);
