@@ -1,78 +1,59 @@
-// --- functions/index.js ---
+// --- functions/index.js (v1.1 - With CORS Security) ---
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-
-// We need to add our Brevo API key here later for sending emails
-// const brevoApiKey = functions.config().brevo.key;
+const cors = require("cors")({ origin: true }); // Import and configure CORS
 
 admin.initializeApp();
 
-/**
- * This is an "onCall" function. It can only be called securely
- * from our authenticated admin application.
- */
-exports.addNewVip = functions.https.onCall(async (data, context) => {
-    // 1. Authentication Check: Ensure only you (an authenticated admin) can run this.
-    if (!context.auth) {
-        throw new functions.https.HttpsError(
-            "unauthenticated", 
-            "You must be an authenticated admin to add a new VIP."
-        );
-    }
+exports.addNewVip = functions.https.onRequest((req, res) => {
+    // This is the CORS wrapper. It handles the security handshake.
+    cors(req, res, async () => {
+        // 1. Authentication Check
+        if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
+            console.error("No Firebase ID token was passed as a Bearer token in the Authorization header.");
+            res.status(401).send("Unauthorized");
+            return;
+        }
 
-    const { name, email } = data;
-    if (!name || !email) {
-        throw new functions.https.HttpsError(
-            "invalid-argument", 
-            "Please provide both a name and an email."
-        );
-    }
+        const idToken = req.headers.authorization.split('Bearer ')[1];
+        try {
+            const decodedIdToken = await admin.auth().verifyIdToken(idToken);
+            // Now we know the user is an authenticated Firebase user.
+            console.log("ID Token correctly decoded:", decodedIdToken);
 
-    try {
-        // 2. Create the User in Firebase Authentication
-        const tempPassword = Math.random().toString(36).slice(-8);
-        const userRecord = await admin.auth().createUser({
-            email: email,
-            password: tempPassword,
-            displayName: name,
-        });
-
-        // 3. Create the User's Profile in the Realtime Database
-        const db = admin.database();
-        const userRef = db.ref(`/users/${userRecord.uid}`);
-        await userRef.set({
-            email: userRecord.email,
-            name: userRecord.displayName,
-            progress: {
-                currentLessonId: "lesson_01", // Default starting lesson
-                unlockedLessons: ["lesson_01"]
+            // 2. Extract Data
+            const { name, email } = req.body.data;
+            if (!name || !email) {
+                throw new Error("Please provide both a name and an email.");
             }
-        });
 
-        // 4. TODO: Send the "Welcome" Email via Brevo API
-        // This section is commented out for now. We will activate it later.
-        /*
-        const emailData = {
-            to: [{ email: email, name: name }],
-            templateId: YOUR_BREVO_WELCOME_TEMPLATE_ID, // We will create this in Brevo
-            params: {
-                NAME: name,
-                EMAIL: email,
-                PASSWORD: tempPassword,
-                LOGIN_URL: "https://vipteam.mikesalazar.online"
-            }
-        };
-        // Code to send email via Brevo's API will go here
-        */
+            // 3. Create the User in Auth
+            const tempPassword = Math.random().toString(36).slice(-8);
+            const userRecord = await admin.auth().createUser({
+                email: email,
+                password: tempPassword,
+                displayName: name,
+            });
 
-        console.log(`Successfully created new VIP: ${name} (${email})`);
-        return { 
-            success: true, 
-            message: `Successfully created new VIP: ${name}. Password: ${tempPassword}` 
-        };
+            // 4. Create User Profile in RTDB
+            const db = admin.database();
+            await db.ref(`/users/${userRecord.uid}`).set({
+                email: userRecord.email,
+                name: userRecord.displayName,
+                progress: {
+                    currentLessonId: "lesson_01",
+                    unlockedLessons: ["lesson_01"]
+                }
+            });
+            
+            // 5. TODO: Send Welcome Email
 
-    } catch (error) {
-        console.error("Error creating new VIP:", error);
-        throw new functions.https.HttpsError("internal", "An error occurred while creating the VIP.");
-    }
+            console.log(`Successfully created new VIP: ${name} (${email})`);
+            res.status(200).send({ result: { success: true, message: `Successfully created new VIP: ${name}. Password: ${tempPassword}` } });
+
+        } catch (error) {
+            console.error("Error creating new VIP:", error);
+            res.status(401).send({ error: { message: "You must be an authenticated admin to add a new VIP." } });
+        }
+    });
 });

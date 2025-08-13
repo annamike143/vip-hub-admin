@@ -44,6 +44,7 @@ const MentorshipInbox = () => {
 
     const handleSelectThread = (userId, lessonId) => {
         setSelectedThread({ userId, lessonId, messages: threads[userId][lessonId] });
+        // This is where you would also mark messages as "read" in a more advanced system
     };
 
     const handleSendReply = async (e) => {
@@ -70,6 +71,7 @@ const MentorshipInbox = () => {
                 list.push({ userId, lessonId });
             }
         }
+        // Add sorting logic here later if needed, e.g., by last message timestamp
         return list;
     }, [threads]);
 

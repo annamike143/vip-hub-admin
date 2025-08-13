@@ -1,16 +1,14 @@
-// --- src/app/views/VipManager.js (v2.4 - THE DEFINITIVE AUTH CONNECTION) ---
+// --- src/app/views/VipManager.js (v3.0 - With Authenticated Fetch) ---
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
-import { httpsCallable } from 'firebase/functions';
-import { database, functions } from '../lib/firebase'; // We get BOTH from our master file
+import { auth, database } from '../lib/firebase'; // We only need these two now
 import './VipManager.css';
 
 const VipManager = () => {
     const [vips, setVips] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [modal, setModal] = useState({ isOpen: false, data: null });
+    const [modal, setModal] = useState({ isOpen: false });
     const [formData, setFormData] = useState({ name: '', email: '' });
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,37 +18,54 @@ const VipManager = () => {
         const unsubscribe = onValue(usersRef, (snapshot) => {
             const data = snapshot.val();
             const vipsList = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
-            setVips(vipsList);
-            setLoading(false);
+            setVips(vipsList); setLoading(false);
         });
         return () => unsubscribe();
     }, []);
 
     const openModal = () => {
         setFormData({ name: '', email: '' });
-        setModal({ isOpen: true, data: null });
-        setError('');
+        setModal({ isOpen: true }); setError('');
     };
-    const closeModal = () => {
-        setModal({ isOpen: false, data: null });
-    };
-    const handleFormChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+    const closeModal = () => setModal({ isOpen: false });
+    const handleFormChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleAddVip = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError('');
 
-        const addNewVip = httpsCallable(functions, 'addNewVip');
-        
+        const user = auth.currentUser;
+        if (!user) {
+            setError("Authentication error. Please sign out and sign back in.");
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
-            const result = await addNewVip({ name: formData.name, email: formData.email });
-            if (result.data.success) {
-                alert(result.data.message);
-                closeModal();
+            // Manually get the user's ID token (their credentials)
+            const idToken = await user.getIdToken(true);
+            const functionUrl = 'https://us-central1-smartbot-status-dashboard.cloudfunctions.net/addNewVip';
+            
+            // Make a direct, authenticated call using the browser's fetch API
+            const response = await fetch(functionUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}` // Presenting our credentials
+                },
+                body: JSON.stringify({ data: { name: formData.name, email: formData.email } })
+            });
+
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error.message);
             }
+
+            alert(result.result.message);
+            closeModal();
+
         } catch (err) {
             console.error("Error calling function:", err);
             setError(err.message || 'An unknown error occurred.');

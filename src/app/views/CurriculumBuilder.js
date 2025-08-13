@@ -1,7 +1,7 @@
-// --- src/app/views/CurriculumBuilder.js (v2.4 - DEFINITIVE SYNTAX FIX) ---
+// --- src/app/views/CurriculumBuilder.js ---
 'use client';
 
-import React, { useState, useEffect } from 'react'; // <-- SYNTAX CORRECTED
+import React, { useState, useEffect } from 'react';
 import { ref, onValue, push, set, remove, update } from 'firebase/database';
 import { database } from '../lib/firebase';
 import './CurriculumBuilder.css';
@@ -28,7 +28,6 @@ const CurriculumBuilder = () => {
     };
 
     const closeModal = () => setModal({ type: null, data: null });
-
     const handleFormChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleSubmit = async (e) => {
@@ -63,7 +62,7 @@ const CurriculumBuilder = () => {
         let confirmMessage;
         if (type === 'module') {
             path = `courseContent/modules/${moduleId}`;
-            confirmMessage = "Are you sure you want to delete this entire module and all its lessons? This cannot be undone.";
+            confirmMessage = "Are you sure you want to delete this entire module and all its lessons?";
         } else {
             path = `courseContent/modules/${moduleId}/lessons/${lessonId}`;
             confirmMessage = "Are you sure you want to delete this lesson?";
@@ -81,6 +80,7 @@ const CurriculumBuilder = () => {
                 <h1>Curriculum Builder</h1>
                 <button onClick={() => openModal('addModule')} className="add-button">+ Add New Module</button>
             </div>
+
             <div className="modules-list">
                 {Object.keys(modules).sort((a,b) => modules[a].order - modules[b].order).map(moduleId => {
                     const moduleData = modules[moduleId];
@@ -90,8 +90,8 @@ const CurriculumBuilder = () => {
                                 <h3>{moduleData.order}. {moduleData.title}</h3>
                                 <div>
                                     <button onClick={() => openModal('editModule', { moduleId, lessons: moduleData.lessons, initialData: { title: moduleData.title, order: moduleData.order } })}>Edit</button>
-                                    <button onClick={() => handleRemove('module', moduleId)} className="remove">Delete Module</button>
-                                    <button onClick={() => openModal('addLesson', { moduleId })}>+ Add Lesson</button>
+                                    <button onClick={() => handleRemove('module', moduleId)} className="remove-button">Delete Module</button>
+                                    <button onClick={() => openModal('addLesson', { moduleId })} className="add-lesson-button">+ Add Lesson</button>
                                 </div>
                             </div>
                             <div className="lessons-list">
@@ -102,7 +102,7 @@ const CurriculumBuilder = () => {
                                             <span>{lesson.order}. {lesson.title}</span>
                                             <div>
                                                 <button onClick={() => openModal('editLesson', { moduleId, lessonId, initialData: lesson })}>Edit</button>
-                                                <button onClick={() => handleRemove('lesson', moduleId, lessonId)} className="remove">Delete Lesson</button>
+                                                <button onClick={() => handleRemove('lesson', moduleId, lessonId)} className="remove-button">Delete</button>
                                             </div>
                                         </div>
                                     )

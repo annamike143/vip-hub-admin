@@ -1,4 +1,4 @@
-// --- src/app/lib/firebase.js (v3.0 - THE DEFINITIVE UNIFIED CONTEXT) ---
+// --- src/app/lib/firebase.js (v5.0 - LIVE ONLY) ---
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";

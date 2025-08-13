@@ -3,16 +3,20 @@
     display: flex;
     height: calc(100vh - 120px); /* Full height minus header/tabs */
     background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 0 0 8px 8px; /* Rounded bottom corners */
 }
 .thread-list-panel {
-    width: 300px;
+    width: 350px;
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
 }
 .panel-header {
     padding: 1.5rem;
     border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
 }
 .panel-header h2, .panel-header h3 { margin: 0; }
 .panel-header p { margin: 0.25rem 0 0; color: var(--text-secondary); }
@@ -43,13 +47,14 @@
     padding: 1.5rem;
     overflow-y: auto;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse; /* Shows latest messages at the bottom */
     gap: 1rem;
 }
 .message-bubble {
     padding: 0.75rem 1.25rem;
     border-radius: 18px;
     max-width: 70%;
+    width: fit-content;
 }
 .message-bubble.user {
     background-color: #e9e9eb;
@@ -67,6 +72,7 @@
     display: flex;
     padding: 1rem;
     border-top: 1px solid var(--border-color);
+    background-color: var(--background-color);
 }
 .reply-form input {
     flex-grow: 1;
