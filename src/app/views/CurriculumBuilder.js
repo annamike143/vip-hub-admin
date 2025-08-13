@@ -116,7 +116,105 @@ const CurriculumBuilder = () => {
             </div>
 
             {/* --- The Universal Modal (unchanged) --- */}
-            {modal.type && ( /* ... modal code is the same ... */ )}
+            {modal.type && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <form onSubmit={handleSubmit}>
+                            {/* Example fields, replace/add as needed */}
+                            {['addModule', 'editModule'].includes(modal.type) && (
+                                <>
+                                    <label>
+                                        Module Title:
+                                        <input
+                                            name="title"
+                                            value={formData.title || ''}
+                                            onChange={handleFormChange}
+                                            required
+                                        />
+                                    </label>
+                                    <label>
+                                        Order:
+                                        <input
+                                            name="order"
+                                            type="number"
+                                            value={formData.order || ''}
+                                            onChange={handleFormChange}
+                                            required
+                                        />
+                                    </label>
+                                </>
+                            )}
+                            {['addLesson', 'editLesson'].includes(modal.type) && (
+                                <>
+                                    <label>
+                                        Lesson Title:
+                                        <input
+                                            name="title"
+                                            value={formData.title || ''}
+                                            onChange={handleFormChange}
+                                            required
+                                        />
+                                    </label>
+                                    <label>
+                                        Description:
+                                        <textarea
+                                            name="description"
+                                            value={formData.description || ''}
+                                            onChange={handleFormChange}
+                                        />
+                                    </label>
+                                    <label>
+                                        Order:
+                                        <input
+                                            name="order"
+                                            type="number"
+                                            value={formData.order || ''}
+                                            onChange={handleFormChange}
+                                            required
+                                        />
+                                    </label>
+                                    <label>
+                                        Thumbnail URL:
+                                        <input
+                                            name="thumbnailUrl"
+                                            value={formData.thumbnailUrl || ''}
+                                            onChange={handleFormChange}
+                                        />
+                                    </label>
+                                    <label>
+                                        Video URL:
+                                        <input
+                                            name="videoUrl"
+                                            value={formData.videoUrl || ''}
+                                            onChange={handleFormChange}
+                                        />
+                                    </label>
+                                    <label>
+                                        Chatbot Embed Code:
+                                        <input
+                                            name="chatbotEmbedCode"
+                                            value={formData.chatbotEmbedCode || ''}
+                                            onChange={handleFormChange}
+                                        />
+                                    </label>
+                                    <label>
+                                        Unlock Code:
+                                        <input
+                                            name="unlockCode"
+                                            value={formData.unlockCode || ''}
+                                            onChange={handleFormChange}
+                                        />
+                                    </label>
+                                </>
+                            )}
+                            <div className="modal-actions">
+                                <button type="submit">Save</button>
+                                <button type="button" onClick={closeModal}>Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
