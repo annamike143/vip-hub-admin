@@ -1,8 +1,8 @@
-// --- src/app/lib/firebase.js (v2.0 - The Definitive Source of Truth) ---
+// --- src/app/lib/firebase.js (v3.0 - THE DEFINITIVE UNIFIED CONTEXT) ---
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
-import { getFunctions, connectFunctionsEmulator } from "firebase/functions"; // Correct import
+import { getFunctions } from "firebase/functions";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,10 +14,8 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// This robust pattern ensures Firebase initializes correctly
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Export a single, unified instance of each service
 export const database = getDatabase(app);
 export const auth = getAuth(app);
-export const functions = getFunctions(app); // Get the functions instance here
+export const functions = getFunctions(app);

@@ -1,10 +1,10 @@
-// --- src/app/views/VipManager.js (v2.3 - DEFINITIVE FINAL VERSION) ---
+// --- src/app/views/VipManager.js (v2.4 - THE DEFINITIVE AUTH CONNECTION) ---
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
-import { database, functions } from '../lib/firebase';
+import { database, functions } from '../lib/firebase'; // We get BOTH from our master file
 import './VipManager.css';
 
 const VipManager = () => {
@@ -26,7 +26,6 @@ const VipManager = () => {
         return () => unsubscribe();
     }, []);
 
-    // --- THESE ARE THE CORRECT, COMPLETE FUNCTIONS ---
     const openModal = () => {
         setFormData({ name: '', email: '' });
         setModal({ isOpen: true, data: null });
@@ -38,7 +37,6 @@ const VipManager = () => {
     const handleFormChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
-    // --- END OF CORRECTED FUNCTIONS ---
 
     const handleAddVip = async (e) => {
         e.preventDefault();
