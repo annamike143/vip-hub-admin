@@ -1,8 +1,7 @@
-// --- src/lib/firebase.js ---
-import { initializeApp, getApps } from "firebase/app";
+// --- src/app/lib/firebase.js (v1.2 - Definitive Initialization) ---
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
-import { getStorage } from "firebase/storage";
 import { getFunctions } from "firebase/functions";
 
 const firebaseConfig = {
@@ -15,11 +14,9 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-let app;
-if (!getApps().length) { app = initializeApp(firebaseConfig); } 
-else { app = getApps()[0]; }
+// This robust pattern ensures Firebase initializes correctly on both server and client
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 export const database = getDatabase(app);
 export const auth = getAuth(app);
-export const storage = getStorage(app);
 export const functions = getFunctions(app);
