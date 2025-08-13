@@ -1,9 +1,9 @@
-// --- src/views/VipManager.js (v2.0 - Full Functionality) ---
+// --- src/app/views/VipManager.js (v2.1 - With Auth Fix) ---
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { getFunctions, httpsCallable } from 'firebase/functions'; // Correct imports
 import { database } from '../lib/firebase';
 import './VipManager.css';
 
@@ -39,13 +39,16 @@ const VipManager = () => {
         setIsSubmitting(true);
         setError('');
 
-        const functions = getFunctions();
+        // --- THIS IS THE CRUCIAL FIX ---
+        // We get the functions instance here, ensuring it's linked to our authenticated app
+        const functions = getFunctions(); 
         const addNewVip = httpsCallable(functions, 'addNewVip');
+        // --- END OF FIX ---
         
         try {
             const result = await addNewVip({ name: formData.name, email: formData.email });
             if (result.data.success) {
-                alert(result.data.message); // Show success message with temp password
+                alert(result.data.message);
                 closeModal();
             }
         } catch (err) {
@@ -58,17 +61,15 @@ const VipManager = () => {
     if (loading) return <div>Loading VIP Data...</div>;
 
     return (
+        // --- JSX from here is the same ---
         <div className="manager-container">
             <div className="manager-header">
                 <h1>VIP Member Management</h1>
                 <button onClick={openModal} className="add-button">+ Add New VIP</button>
             </div>
-
             <div className="manager-table-wrapper">
                 <table>
-                    <thead>
-                        <tr><th>Name</th><th>Email</th><th>Progress</th><th>Actions</th></tr>
-                    </thead>
+                    <thead><tr><th>Name</th><th>Email</th><th>Progress</th><th>Actions</th></tr></thead>
                     <tbody>
                         {vips.map(vip => (
                             <tr key={vip.id}>
@@ -84,7 +85,6 @@ const VipManager = () => {
                     </tbody>
                 </table>
             </div>
-
             {modal.isOpen && (
                 <div className="modal-backdrop">
                     <div className="modal-content">
