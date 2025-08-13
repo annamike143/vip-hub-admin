@@ -1,10 +1,10 @@
-// --- src/app/views/VipManager.js (v2.2 - Sourced Correctly) ---
+// --- src/app/views/VipManager.js (v2.3 - DEFINITIVE FINAL VERSION) ---
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
-import { database, functions } from '../lib/firebase'; // <-- IMPORTING functions FROM OUR MASTER FILE
+import { database, functions } from '../lib/firebase';
 import './VipManager.css';
 
 const VipManager = () => {
@@ -26,19 +26,26 @@ const VipManager = () => {
         return () => unsubscribe();
     }, []);
 
-    const openModal = () => { /* ... (This function is unchanged) ... */ };
-    const closeModal = () => { /* ... (This function is unchanged) ... */ };
-    const handleFormChange = (e) => { /* ... (This function is unchanged) ... */ };
+    // --- THESE ARE THE CORRECT, COMPLETE FUNCTIONS ---
+    const openModal = () => {
+        setFormData({ name: '', email: '' });
+        setModal({ isOpen: true, data: null });
+        setError('');
+    };
+    const closeModal = () => {
+        setModal({ isOpen: false, data: null });
+    };
+    const handleFormChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+    // --- END OF CORRECTED FUNCTIONS ---
 
     const handleAddVip = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError('');
 
-        // --- THE CRUCIAL FIX ---
-        // We now use the 'functions' instance we imported, which is already linked to our app
         const addNewVip = httpsCallable(functions, 'addNewVip');
-        // --- END OF FIX ---
         
         try {
             const result = await addNewVip({ name: formData.name, email: formData.email });
@@ -56,7 +63,6 @@ const VipManager = () => {
     if (loading) return <div>Loading VIP Data...</div>;
 
     return (
-        // --- JSX from here is the same ---
         <div className="manager-container">
             <div className="manager-header">
                 <h1>VIP Member Management</h1>
