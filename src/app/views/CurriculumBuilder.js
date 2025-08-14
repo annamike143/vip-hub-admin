@@ -1,4 +1,4 @@
-// --- src/app/views/CurriculumBuilder.js (v4.0 - Definitive Raw Embed) ---
+// --- src/app/views/CurriculumBuilder.js (THE DEFINITIVE FINAL VERSION) ---
 'use client';
 import React, { useState, useEffect } from 'react';
 import { ref, onValue, set, remove } from 'firebase/database';
@@ -41,20 +41,31 @@ const CurriculumBuilder = () => {
                 lessons: type === 'editModule' ? data.lessons : {}
             });
         } else if (type === 'addLesson' || type === 'editLesson') {
-            const { lessonId, title, description, order, videoUrl, thumbnailUrl, chatbotEmbedCode, unlockCode } = formData;
+            const { lessonId, title, description, order, videoUrl, thumbnailUrl, chatbotId, unlockCode } = formData;
             const path = type === 'addLesson' ? `courseContent/modules/${data.moduleId}/lessons/${lessonId}` : `courseContent/modules/${data.moduleId}/lessons/${data.lessonId}`;
             await set(ref(database, path), {
                 title, description, unlockCode,
                 order: parseInt(order, 10),
                 videoUrl, thumbnailUrl: thumbnailUrl || '',
-                chatbotEmbedCode: chatbotEmbedCode || '' // We store the whole raw code now
+                chatbotId: chatbotId || ''
             });
         }
         closeModal();
     };
 
     const handleRemove = async (type, moduleId, lessonId = null) => {
-        // ... (handleRemove function is the same as your last working version)
+        let path;
+        let confirmMessage;
+        if (type === 'module') {
+            path = `courseContent/modules/${moduleId}`;
+            confirmMessage = "Are you sure you want to delete this entire module and all its lessons?";
+        } else {
+            path = `courseContent/modules/${moduleId}/lessons/${lessonId}`;
+            confirmMessage = "Are you sure you want to delete this lesson?";
+        }
+        if (window.confirm(confirmMessage)) {
+            await remove(ref(database, path));
+        }
     };
 
     if (loading) return <div>Loading Curriculum...</div>;
@@ -70,7 +81,14 @@ const CurriculumBuilder = () => {
                     const moduleData = modules[moduleId];
                     return (
                         <div key={moduleId} className="module-card">
-                            {/* ... (module-header JSX is the same) ... */}
+                            <div className="module-header">
+                                <h3>{moduleData.order}. {moduleData.title}</h3>
+                                <div>
+                                    <button onClick={() => openModal('editModule', { moduleId, lessons: moduleData.lessons, initialData: { title: moduleData.title, order: moduleData.order } })}>Edit</button>
+                                    <button onClick={() => handleRemove('module', moduleId)} className="remove-button">Delete Module</button>
+                                    <button onClick={() => openModal('addLesson', { moduleId })} className="add-lesson-button">+ Add Lesson</button>
+                                </div>
+                            </div>
                             <div className="lessons-list">
                                 {moduleData.lessons && Object.keys(moduleData.lessons).sort((a,b) => moduleData.lessons[a].order - moduleData.lessons[b].order).map(lessonId => {
                                     const lesson = moduleData.lessons[lessonId];
@@ -92,10 +110,21 @@ const CurriculumBuilder = () => {
             
             <div className="modal-backdrop" style={{ display: modal.type ? 'flex' : 'none' }}>
                 <div className="modal-content">
-                    <h2>{/* ... (Modal header logic is the same) ... */}</h2>
+                    <h2>
+                        {modal.type === 'addModule' && 'Add New Module'}
+                        {modal.type === 'editModule' && 'Edit Module'}
+                        {modal.type === 'addLesson' && 'Add New Lesson'}
+                        {modal.type === 'editLesson' && 'Edit Lesson'}
+                    </h2>
                     <form onSubmit={handleSubmit}>
-                        {/* ... (Module fields are the same) ... */}
-
+                        {(modal.type === 'addModule' || modal.type === 'editModule') && <>
+                            <label>Module ID</label>
+                            <input name="moduleId" onChange={handleFormChange} placeholder="e.g., module_01" defaultValue={formData.moduleId} required disabled={modal.type === 'editModule'} />
+                            <label>Module Title</label>
+                            <input name="title" onChange={handleFormChange} placeholder="e.g., The Foundations" defaultValue={formData.title} required />
+                            <label>Order</label>
+                            <input name="order" type="number" onChange={handleFormChange} placeholder="e.g., 1" defaultValue={formData.order} required />
+                        </>}
                         {(modal.type === 'addLesson' || modal.type === 'editLesson') && <>
                             <label>Lesson ID</label>
                             <input name="lessonId" onChange={handleFormChange} placeholder="e.g., lesson_01" defaultValue={formData.lessonId} required disabled={modal.type === 'editLesson'} />
@@ -109,12 +138,11 @@ const CurriculumBuilder = () => {
                             <input name="videoUrl" onChange={handleFormChange} placeholder="https://www.youtube.com/watch?v=..." defaultValue={formData.videoUrl} required />
                             <label>Thumbnail Image URL (Optional)</label>
                             <input name="thumbnailUrl" onChange={handleFormChange} placeholder="https://..." defaultValue={formData.thumbnailUrl} />
-                            <label>AI Mentor Inline Embed Code</label>
-                            <textarea name="chatbotEmbedCode" onChange={handleFormChange} placeholder="Paste the full <div id='chat_form'>...</div> code here" defaultValue={formData.chatbotEmbedCode} required />
+                            <label>AI Mentor Bot ID</label>
+                            <input name="chatbotId" onChange={handleFormChange} placeholder="e.g., 41717" defaultValue={formData.chatbotId} required />
                             <label>Unlock Code</label>
                             <input name="unlockCode" onChange={handleFormChange} placeholder="The secret code to unlock the next lesson" defaultValue={formData.unlockCode} required />
                         </>}
-
                         <div className="modal-actions">
                             <button type="button" onClick={closeModal}>Cancel</button>
                             <button type="submit" className="submit-button">Save Changes</button>
