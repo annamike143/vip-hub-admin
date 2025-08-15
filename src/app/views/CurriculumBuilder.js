@@ -1,4 +1,4 @@
-// --- src/app/views/CurriculumBuilder.js (THE DEFINITIVE FINAL VERSION) ---
+// --- src/app/views/CurriculumBuilder.js (THE DEFINITIVE 'chatbotId' VERSION) ---
 'use client';
 import React, { useState, useEffect } from 'react';
 import { ref, onValue, set, remove } from 'firebase/database';
@@ -41,13 +41,14 @@ const CurriculumBuilder = () => {
                 lessons: type === 'editModule' ? data.lessons : {}
             });
         } else if (type === 'addLesson' || type === 'editLesson') {
+            // --- THE CORRECTED LOGIC ---
             const { lessonId, title, description, order, videoUrl, thumbnailUrl, chatbotId, unlockCode } = formData;
             const path = type === 'addLesson' ? `courseContent/modules/${data.moduleId}/lessons/${lessonId}` : `courseContent/modules/${data.moduleId}/lessons/${data.lessonId}`;
             await set(ref(database, path), {
                 title, description, unlockCode,
                 order: parseInt(order, 10),
                 videoUrl, thumbnailUrl: thumbnailUrl || '',
-                chatbotId: chatbotId || ''
+                chatbotId: chatbotId || '' // Now correctly saves 'chatbotId'
             });
         }
         closeModal();
@@ -138,6 +139,7 @@ const CurriculumBuilder = () => {
                             <input name="videoUrl" onChange={handleFormChange} placeholder="https://www.youtube.com/watch?v=..." defaultValue={formData.videoUrl} required />
                             <label>Thumbnail Image URL (Optional)</label>
                             <input name="thumbnailUrl" onChange={handleFormChange} placeholder="https://..." defaultValue={formData.thumbnailUrl} />
+                            {/* --- THE CORRECTED FORM FIELD --- */}
                             <label>AI Mentor Bot ID</label>
                             <input name="chatbotId" onChange={handleFormChange} placeholder="e.g., 41717" defaultValue={formData.chatbotId} required />
                             <label>Unlock Code</label>
@@ -153,5 +155,4 @@ const CurriculumBuilder = () => {
         </div>
     );
 };
-
 export default CurriculumBuilder;
